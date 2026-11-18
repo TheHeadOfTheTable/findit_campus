@@ -8,9 +8,9 @@
 // Pour séparer les données de l'interface. Si on veut modifier les exemples,
 // on vient ici sans toucher aux écrans.
 //
-// Les données sont en mémoire : elles disparaissent à la fermeture de l'app.
-// C'est volontaire pour ce TP de 2 heures (pas de backend, pas de base de
-// données).
+// Ces annonces sont copiées dans la base SQLite au tout premier lancement
+// (voir `database_helper.dart`, méthode `onCreate`). Ensuite, c'est la base
+// qui fait foi.
 
 import '../models/lost_item.dart';
 

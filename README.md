@@ -20,6 +20,7 @@ flutter run
 - Formulaire d'ajout avec validation des champs obligatoires.
 - Mise à jour immédiate de la liste après ajout.
 - Écrans Profil, À propos, Paramètres et Aide.
+- Sauvegarde des annonces dans une base SQLite locale (`sqflite`).
 
 ## Concepts abordés
 
@@ -29,10 +30,11 @@ flutter run
 - Navigation avec `Navigator.push` / `Navigator.pop`
 - Formulaires : `Form`, `GlobalKey<FormState>`, `TextFormField`, validators
 - `TextEditingController` et `dispose()`
+- Base de données SQLite : `sqflite`, `toMap()` / `fromMap()`, `async` / `await`
+  (voir [guide-sqllite.md](guide-sqllite.md))
 
 ## Limites connues
 
-Les données sont stockées uniquement en mémoire : elles disparaissent après
-redémarrage de l'application. Il n'y a pas de backend, d'authentification ni
-de persistance.
-```
+Les annonces sont enregistrées dans une base SQLite sur l'appareil
+(Android, iOS, macOS). Il n'y a pas de backend ni d'authentification : les
+données ne sont pas partagées entre téléphones.

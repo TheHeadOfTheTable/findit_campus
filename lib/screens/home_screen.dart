@@ -12,11 +12,13 @@
 // - `ListView.builder` pour afficher une liste d'éléments ;
 // - navigation avec `Navigator.push` / `Navigator.pop` ;
 // - récupération d'un résultat renvoyé par un autre écran ;
-// - gestion de l'état vide (liste vide).
+// - gestion de l'état vide (liste vide) ;
+// - `initState()` pour charger les annonces depuis SQLite au démarrage ;
+// - indicateur de chargement (`CircularProgressIndicator`).
 
 import 'package:flutter/material.dart';
 
-import '../data/sample_items.dart';
+import '../data/database_helper.dart';
 import '../models/lost_item.dart';
 import '../widgets/item_card.dart';
 import 'add_item_screen.dart';
@@ -31,9 +33,40 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Liste des annonces affichées. On part d'une copie des données d'exemple
-  // pour ne pas modifier la liste d'origine (`sampleItems`).
-  final List<LostItem> _items = [...sampleItems];
+  // Liste des annonces affichées. Elle est vide au départ, puis remplie
+  // avec les annonces lues dans la base SQLite.
+  List<LostItem> _items = [];
+
+  // `true` tant que la lecture de la base n'est pas terminée.
+  bool _isLoading = true;
+
+  // `initState()` est appelée UNE fois, quand l'écran apparaît.
+  // C'est le bon endroit pour lancer le chargement des données.
+  @override
+  void initState() {
+    super.initState();
+    _loadItems();
+  }
+
+  /// Lit les annonces dans la base puis rafraîchit l'écran.
+  Future<void> _loadItems() async {
+    try {
+      final items = await DatabaseHelper.getItems();
+      // `mounted` : on vérifie que l'écran est toujours affiché avant
+      // d'appeler setState() (la lecture a pris un peu de temps).
+      if (!mounted) return;
+      setState(() {
+        _items = items;
+        _isLoading = false;
+      });
+    } catch (e) {
+      // Si la base n'est pas disponible (ex. plateforme non supportée),
+      // on affiche simplement une liste vide au lieu de planter.
+      debugPrint('Erreur de lecture SQLite : $e');
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
 
   /// Ouvre l'écran d'ajout et récupère l'annonce créée.
   ///
@@ -47,9 +80,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     // Si l'utilisateur a bien créé une annonce (et n'a pas juste fait "retour"),
-    // on l'ajoute à la liste et on appelle `setState()` pour rafraîchir
-    // l'affichage.
+    // on l'enregistre dans la base, puis on l'ajoute à la liste et on appelle
+    // `setState()` pour rafraîchir l'affichage.
     if (newItem != null) {
+      // Enregistrement dans SQLite : l'annonce survivra à la fermeture
+      // de l'application.
+      await DatabaseHelper.insertItem(newItem);
+      if (!mounted) return;
       setState(() {
         // On insère en tête de liste pour voir la nouvelle annonce en premier.
         _items.insert(0, newItem);
@@ -69,8 +106,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('FindIt Campus')),
-      // Liste des annonces ou message si la liste est vide.
-      body: _items.isEmpty
+      // Pendant le chargement : un rond qui tourne.
+      // Ensuite : la liste des annonces, ou un message si elle est vide.
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _items.isEmpty
           ? const Center(
               child: Text(
                 'Aucune annonce pour le moment.\n'

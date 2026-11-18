@@ -75,4 +75,44 @@ class LostItem {
     final year = date.year.toString();
     return '$day/$month/$year';
   }
+
+  // ---------------------------------------------------------------------
+  // Conversion pour la base de données SQLite
+  // ---------------------------------------------------------------------
+  //
+  // SQLite ne sait pas stocker un objet `LostItem` directement. Il ne connaît
+  // que des valeurs simples : texte, nombres...
+  // On transforme donc l'annonce en `Map` (clé = nom de la colonne,
+  // valeur = contenu de la case) avant de l'enregistrer, et on fait
+  // l'inverse quand on la relit.
+
+  /// Transforme l'annonce en Map pour l'enregistrer dans la base.
+  Map<String, Object?> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      // L'enum est enregistré sous forme de texte : "lost" ou "found".
+      'status': status.name,
+      'category': category,
+      'location': location,
+      // La date est enregistrée sous forme de texte : "2026-10-20T00:00:00.000".
+      'date': date.toIso8601String(),
+      'description': description,
+    };
+  }
+
+  /// Recrée une annonce à partir d'une ligne lue dans la base.
+  factory LostItem.fromMap(Map<String, Object?> map) {
+    return LostItem(
+      id: map['id'] as String,
+      title: map['title'] as String,
+      // "lost" -> ItemStatus.lost, "found" -> ItemStatus.found
+      status: ItemStatus.values.byName(map['status'] as String),
+      category: map['category'] as String,
+      location: map['location'] as String,
+      // Texte -> DateTime
+      date: DateTime.parse(map['date'] as String),
+      description: map['description'] as String,
+    );
+  }
 }
