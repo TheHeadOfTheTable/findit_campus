@@ -67,20 +67,25 @@ Dans ce TP, on utilise seulement **INSERT** (ajouter) et **SELECT** (lire).
 
 ```yaml
 dependencies:
-  sqflite: ^2.4.6   # SQLite pour Flutter
-  path: ^1.9.1      # Pour construire le chemin du fichier .db
+  sqflite: ^2.4.6                 # SQLite pour Flutter (téléphone)
+  path: ^1.9.1                    # Pour construire le chemin du fichier .db
+  sqflite_common_ffi_web: ^1.2.2  # SQLite dans le NAVIGATEUR
 ```
 
 Commande utilisée pour les ajouter :
 
 ```bash
-flutter pub add sqflite path
+flutter pub add sqflite path sqflite_common_ffi_web
 ```
 
 ### 4.2 Les fichiers modifiés / créés
 
 ```
+web/
+├── sqlite3.wasm               ← NOUVEAU : le moteur SQLite pour le navigateur
+└── sqflite_sw.js              ← NOUVEAU : le « traducteur » entre Flutter et SQLite
 lib/
+├── main.dart                  ← active SQLite web si on est dans un navigateur
 ├── data/
 │   ├── database_helper.dart   ← NOUVEAU : tout le code SQLite est ici
 │   └── sample_items.dart      ← sert à remplir la base au 1er lancement
@@ -97,6 +102,37 @@ jour, on ne modifie qu'un seul fichier.
 ---
 
 ## 5. Étape par étape
+
+### Étape 0 – SQLite dans le navigateur (`main.dart`)
+
+Le paquet `sqflite` a été prévu pour les téléphones. Un navigateur ne sait
+pas lire un fichier `.db` tout seul. On utilise donc une version « web » de
+SQLite, compilée en **WebAssembly** (`sqlite3.wasm`) : c'est le vrai moteur
+SQLite, transformé pour tourner dans Chrome, Edge ou Firefox.
+
+```dart
+void main() {
+  if (kIsWeb) {                              // kIsWeb = true dans un navigateur
+    databaseFactory = databaseFactoryFfiWeb; // on branche SQLite version web
+  }
+  runApp(const FindItCampusApp());
+}
+```
+
+Le reste du code (`DatabaseHelper`, écrans…) **ne change pas** : c'est tout
+l'intérêt d'avoir mis le SQL dans un seul fichier.
+
+Où sont stockées les données ? Dans le navigateur lui-même, dans un espace
+appelé **IndexedDB** (un peu comme les cookies, mais en plus gros).
+
+Les deux fichiers `web/sqlite3.wasm` et `web/sqflite_sw.js` ont été générés
+avec :
+
+```bash
+dart run sqflite_common_ffi_web:setup
+```
+
+(Ils sont déjà dans le projet : les étudiants n'ont rien à relancer.)
 
 ### Étape 1 – Traduire une annonce pour SQLite (`lost_item.dart`)
 
@@ -237,21 +273,35 @@ tourne) pendant la lecture.
 
 ## 8. Tester
 
-1. Lancer l'appli sur un **émulateur Android** ou un **téléphone** :
+### Dans le navigateur (Chrome / Edge)
+
+1. Lancer l'appli :
    ```bash
    flutter pub get
-   flutter run
+   flutter run -d chrome
    ```
 2. Ajouter une annonce.
-3. **Fermer complètement** l'application (pas juste revenir en arrière).
-4. La relancer ➜ l'annonce est toujours là ✅
+3. **Rafraîchir la page** (F5) ou fermer l'onglet et relancer.
+4. L'annonce est toujours là ✅
 
-⚠️ `sqflite` fonctionne sur **Android, iOS et macOS**. Sur Windows, Linux ou
-le Web, la base n'est pas disponible : l'application affichera une liste vide
-(un message d'erreur apparaît dans la console).
+⚠️ Avec `flutter run -d chrome`, Flutter peut ouvrir un **profil Chrome
+neuf** à chaque lancement, et donc une base vide. Pour garder la même base
+entre deux lancements, fixer le port et utiliser son Chrome habituel :
+```bash
+flutter run -d web-server --web-port 8080
+```
+puis ouvrir http://localhost:8080 dans son navigateur.
 
-🔄 Pour **repartir de zéro** (retrouver les 4 exemples), désinstaller
-l'application de l'émulateur : cela supprime le fichier `.db`.
+🔄 Pour **repartir de zéro** : outils de développement (F12) ➜ onglet
+*Application* ➜ *Storage* ➜ *Clear site data*.
+
+### Sur un téléphone / émulateur Android
+
+Même principe avec `flutter run`, en fermant complètement l'appli puis en la
+relançant. Pour repartir de zéro : désinstaller l'appli.
+
+⚠️ Sur Windows et Linux (application de bureau), la base n'est pas
+configurée : l'appli affichera une liste vide.
 
 ---
 
@@ -268,6 +318,8 @@ l'application de l'émulateur : cela supprime le fichier `.db`.
 | `Future`          | Une valeur qui arrivera plus tard                             |
 | `async` / `await` | Mots-clés pour attendre un `Future` sans bloquer l'écran      |
 | `initState()`     | Méthode appelée une seule fois quand l'écran apparaît         |
+| WebAssembly (wasm)| Format qui permet de faire tourner du code rapide dans un navigateur |
+| IndexedDB         | Espace de stockage intégré au navigateur                      |
 
 ---
 

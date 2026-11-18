@@ -8,7 +8,7 @@ des objets perdus ou trouvés sur le campus.
 ```bash
 flutter pub get
 flutter analyze
-flutter run
+flutter run -d chrome
 ```
 
 ## Fonctionnalités
@@ -36,5 +36,5 @@ flutter run
 ## Limites connues
 
 Les annonces sont enregistrées dans une base SQLite sur l'appareil
-(Android, iOS, macOS). Il n'y a pas de backend ni d'authentification : les
+(navigateur web, Android, iOS, macOS). Il n'y a pas de backend ni d'authentification : les
 données ne sont pas partagées entre téléphones.

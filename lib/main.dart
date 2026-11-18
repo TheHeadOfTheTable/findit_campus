@@ -10,12 +10,24 @@
 // - `MaterialApp` : enveloppe toute l'application (thème, navigation) ;
 // - `ThemeData` et `ColorScheme.fromSeed` : palette de couleurs Material 3.
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 // On importe l'écran principal qui contient la barre de navigation.
 import 'screens/main_screen.dart';
 
 void main() {
+  // SQLite dans le navigateur :
+  // `sqflite` seul ne fonctionne que sur téléphone. Quand l'appli tourne
+  // dans un navigateur (`kIsWeb` vaut `true`), on lui dit d'utiliser la
+  // version "web" de SQLite. La base est alors sauvegardée dans le
+  // navigateur (IndexedDB) et survit au rafraîchissement de la page.
+  if (kIsWeb) {
+    databaseFactory = databaseFactoryFfiWeb;
+  }
+
   // `runApp` prend un widget et l'affiche à l'écran.
   // Ici le widget racine est `FindItCampusApp`.
   runApp(const FindItCampusApp());

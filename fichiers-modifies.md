@@ -12,6 +12,18 @@
 - `pubspec.yaml` : ajout des dépendances `sqflite` et `path`
 - `README.md` : mention de SQLite dans les fonctionnalités, les concepts et les limites
 
+## Ajout du support navigateur (SQLite web)
+
+### Créés
+- `web/sqlite3.wasm` : moteur SQLite compilé pour le navigateur (WebAssembly)
+- `web/sqflite_sw.js` : script qui fait le lien entre Flutter et SQLite dans le navigateur
+
+### Modifiés
+- `lib/main.dart` : active SQLite web quand l'appli tourne dans un navigateur (`kIsWeb`)
+- `pubspec.yaml` / `pubspec.lock` : ajout de `sqflite_common_ffi_web`
+- `guide-sqllite.md` : explications sur le mode navigateur
+- `README.md` : lancement avec `flutter run -d chrome`
+
 ## Modifiés automatiquement par Flutter (`flutter pub add`)
 - `pubspec.lock` : versions exactes des paquets installés
 - `macos/Flutter/GeneratedPluginRegistrant.swift` : enregistrement du plugin sqflite pour macOS
