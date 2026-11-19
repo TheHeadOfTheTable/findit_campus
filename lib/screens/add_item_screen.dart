@@ -47,12 +47,12 @@ class _AddItemScreenState extends State<AddItemScreen> {
     final item = LostItem(
       // L'heure actuelle en millisecondes sert d'identifiant unique.
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: _title.text,
-      status: _status,
-      category: _category.text,
-      location: _location.text,
-      date: DateTime.now(),
-      description: _description.text,
+      title: _title.text,// Récupère le texte tapé dans le champ Titre
+      status: _status,// Récupère le statut choisi dans le menu déroulant
+      category: _category.text,// Récupère le texte tapé dans le champ Catégorie
+      location: _location.text,// Récupère le texte tapé dans le champ Lieu
+      date: DateTime.now(),// Date et heure actuelles
+      description: _description.text,// Récupère le texte tapé dans le champ Description
     );
 
     // On ferme l'écran et on renvoie l'annonce à l'écran d'accueil.

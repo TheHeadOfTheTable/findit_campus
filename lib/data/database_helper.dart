@@ -97,7 +97,11 @@ class DatabaseHelper {
   ///
   /// Équivaut à : INSERT INTO items (id, title, ...) VALUES (...)
   static Future<void> insertItem(LostItem item) async {
+    //Connexion à la base de données
     final db = await database;
+
+    // On insère l'annonce dans la table. `item.toMap()` transforme
+    // l'objet `LostItem` en Map (ex. {'id': '1', 'title': 'Sac à dos noir', ...}).
     await db.insert(tableItems, item.toMap());
   }
 }
